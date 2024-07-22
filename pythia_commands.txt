@@ -1,0 +1,1 @@
+lm_eval --model hf --model_args pretrained=EleutherAI/pythia-14m,revision=step0,dtype="float" --tasks arc_easy --device cuda:0 --batch_size 32 --output_path output/pythia_arc
