@@ -1,5 +1,6 @@
 import subprocess
 from huggingface_hub import HfApi
+from tqdm import tqdm
 
 api = HfApi()
 refs = api.list_repo_refs("EleutherAI/pythia-14m")
@@ -18,18 +19,19 @@ base_command = [
     "--output_path", "output/pythia_arc",
     # "--use_cache", "output/pythia_arc"
 ]
-for revision in revisions:
+for revision in tqdm(revisions):
     full_command = base_command.copy()
     full_command[4] += f",revision={revision},dtype=float"
     
-    print(f"Running command: {' '.join(full_command)}")
+    # print(f"Running command: {' '.join(full_command)}")
     
     # Run the command
     try:
         result = subprocess.run(full_command, check=True, text=True, capture_output=True)
-        print(f"Command for revision {revision} completed successfully")
+        # print(f"Command for revision {revision} completed successfully")
     except subprocess.CalledProcessError as e:
-        print(f"Error running command for revision {revision}: {e}")
-        print(f"Error output: {e.stderr}")
+        # print(f"Error running command for revision {revision}: {e}")
+        # print(f"Error output: {e.stderr}")
+        l = e
 
 print("All evaluations completed")
