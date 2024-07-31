@@ -13,11 +13,13 @@ tokenizer = AutoTokenizer.from_pretrained(
   # cache_dir="./pythia-70m-deduped/step3000",
 )
 
-inputs = tokenizer("Hello, I am", return_tensors="pt").to(model.device)
+prompt = "The most important political question in the world is"
+
+inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 tokens = model.generate(**inputs,
                         do_sample=False,
                         max_new_tokens=50,
-                        repetition_penalty=1.0008,
+                        # repetition_penalty=1.0008,
                         )
 tokenizer.decode(tokens[0])
 print(tokenizer.decode(tokens[0]))
