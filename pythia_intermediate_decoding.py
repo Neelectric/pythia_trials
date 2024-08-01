@@ -86,7 +86,7 @@ class PythiaHelper:
         return self.model.model.layers[layer].get_attn_activations()
 
     def reset_all(self):
-        for layer in self.model.model.layers:
+        for layer in self.model.base_model.layers:
             layer.reset()
 
     def print_decoded_activations(self, decoded_activations, label, topk):
@@ -119,6 +119,8 @@ model = PythiaHelper()
 prompt = "The most important political question in the world is"
 output = model.generate_text(prompt, max_length=10)
 print(output)
+
+model.reset_all()
 
 model.decode_all_layers(prompt, 
                         print_attn_mech=True, 
