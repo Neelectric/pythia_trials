@@ -116,13 +116,15 @@ class PythiaHelper:
 
 model = PythiaHelper()
 
-prompt = "The most important political question in the world is"
+# prompt = "The most important political question in the world is"
+prompt = "Liam knows that if he finishes his work early for the day, he will order pizza for dinner. However, on this particular day, he decided against ordering pizza. Question: Does this imply that Liam didn't finish his work early? Answer: "
 output = model.generate_text(prompt, max_length=10)
 print(output)
 
 model.reset_all()
 
 model.decode_all_layers(prompt, 
+                        topk=10,
                         print_attn_mech=True, 
                         print_intermediate_res=True, 
                         print_mlp=True, 
