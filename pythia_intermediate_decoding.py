@@ -56,8 +56,7 @@ class BlockOutputWrapper(torch.nn.Module):
         return self.block.attention.activations
 
 class PythiaHelper:
-    def __init__(self):
-        model_id = "EleutherAI/pythia-70m-deduped"
+    def __init__(self, model_id="EleutherAI/pythia-14m"):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
         self.model = AutoModelForCausalLM.from_pretrained(model_id).to(self.device)
@@ -70,6 +69,7 @@ class PythiaHelper:
             **inputs,
             do_sample=False,
             max_new_tokens=10,
+            repetition_penalty=1.0008,
             )
         return self.tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
 
@@ -113,8 +113,8 @@ class PythiaHelper:
                 self.print_decoded_activations(layer.block_output_unembedded, 'Block output', topk)
             print("\n")
 
-
-model = PythiaHelper()
+model_id = "EleutherAI/pythia-160m-deduped"
+model = PythiaHelper(model_id=model_id)
 
 # prompt = "The most important political question in the world is"
 prompt = "Liam knows that if he finishes his work early for the day, he will order pizza for dinner. However, on this particular day, he decided against ordering pizza. Question: Does this imply that Liam didn't finish his work early? Answer: "
