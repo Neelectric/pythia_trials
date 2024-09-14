@@ -1,2 +1,6 @@
 /pythia-70m-deduped/
 /LogicBench/
+/pythia-14m/
+/.vscode/
+/lm-evaluation-harness/
+/output/
