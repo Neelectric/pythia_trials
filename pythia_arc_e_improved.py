@@ -19,10 +19,9 @@ model_id = "EleutherAI/pythia-14m"
 refs = api.list_repo_refs(model_id)
 revisions = [ref.ref.split('/')[-1] for ref in refs.branches]
 revisions.reverse() 
-# print(revisions)
 revisions.pop(0)
 
-for revision in tqdm(revisions):
+for revision in tqdm(revisions, dynamic_ncols=True):
     print(revision)
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
@@ -32,13 +31,6 @@ for revision in tqdm(revisions):
         )
     wrapped_model = lm_eval.models.huggingface.HFLM(pretrained=model)
 
-    # To get a task dict for `evaluate`
-    # task_dict = lm_eval.tasks.get_task_dict(
-    #     [
-    #         "arc_easy", # A stock task
-    #         ],
-    #         )
-
     results = lm_eval.simple_evaluate( # call simple_evaluate
         model=wrapped_model,
         tasks=["arc_easy"],
@@ -47,6 +39,5 @@ for revision in tqdm(revisions):
     )
     del model
     break
-
 
 print("All evaluations completed")
