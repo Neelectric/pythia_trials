@@ -57,9 +57,16 @@ class BlockOutputWrapper(torch.nn.Module):
 
 class PythiaHelper:
     def __init__(self, model_id="EleutherAI/pythia-14m"):
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        cache_dir = "./models/"
+        if torch.cuda.is_available(): self.device = "cuda"
+        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available(): self.device = "mps"
+        else: self.device = "cpu"
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        self.model = AutoModelForCausalLM.from_pretrained(model_id).to(self.device)
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+            cache_dir=cache_dir + model_id,
+            device_map=self.device
+            )
         for i, layer in enumerate(self.model.base_model.layers):
             self.model.base_model.layers[i] = BlockOutputWrapper(layer, self.model.embed_out, self.model.base_model.final_layer_norm)
 
@@ -113,13 +120,12 @@ class PythiaHelper:
                 self.print_decoded_activations(layer.block_output_unembedded, 'Block output', topk)
             print("\n")
 
-model_id = "EleutherAI/pythia-160m-deduped"
+model_id = "EleutherAI/pythia-1B-deduped"
 model = PythiaHelper(model_id=model_id)
 
 # prompt = "The most important political question in the world is"
-prompt = "Liam knows that if he finishes his work early for the day, he will order pizza for dinner. However, on this particular day, he decided against ordering pizza. Question: Does this imply that Liam didn't finish his work early? Answer: "
-output = model.generate_text(prompt, max_length=10)
-print(output)
+prompt = "Liam knows that if he finishes his work early for the day, he will order pizza for dinner. However, on this particular day, he decided against ordering pizza. Question: Does this imply that Liam didn't finish his work early?\n\nThe answer is "
+
 
 model.reset_all()
 
@@ -130,4 +136,5 @@ model.decode_all_layers(prompt,
                         print_mlp=True, 
                         print_block=True
                         )
-
+output = model.generate_text(prompt, max_length=10)
+print(output)

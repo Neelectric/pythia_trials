@@ -5,7 +5,7 @@
 import time
 
 # external imports
-from transformers import GPTNeoXForCausalLM, AutoTokenizer
+from transformers import GPTNeoXForCausalLM, AutoModel, AutoTokenizer, OlmoForCausalLM
 import torch
 from tqdm import tqdm
 
@@ -26,9 +26,12 @@ elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
 print(f"using device {device}")
 
 # Model initialisation
-model_id = "EleutherAI/pythia-70m-deduped"
-cache_dir = "./models/pythia-70m-deduped/"
-model = GPTNeoXForCausalLM.from_pretrained(
+model_id_pythia = "EleutherAI/pythia-70m-deduped"
+cache_dir_pythia = "./models/pythia-70m-deduped/"
+
+model_id = "allenai/OLMo-1B-hf"
+cache_dir = "./models/allenai/OLMo-1B-hf"
+model = OlmoForCausalLM.from_pretrained(
   model_id,
   cache_dir=cache_dir,
   device_map=device,
@@ -40,6 +43,17 @@ tokenizer = AutoTokenizer.from_pretrained(
 )
 
 prompt = "Kristin and her son Justin went to visit her mother Carol on a nice Sunday afternoon. They went out for a movie together and had a good time. If Justin is Kristin's son, and Carol is Kristin's mom, it follows that Carol is Justin's "
+
+lm_head = model.lm_head
+embed_tokens = model.model.embed_tokens
+
+print(embed_tokens.weight)
+print(embed_tokens.weight.shape)
+print(lm_head.weight)
+print(lm_head.weight.shape)
+
+is_same = torch.equal(lm_head.weight, embed_tokens.weight)
+print(is_same)
 
 inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 tokens = model.generate(**inputs,
