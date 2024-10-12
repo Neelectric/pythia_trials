@@ -77,6 +77,7 @@ class PythiaHelper:
             do_sample=False,
             max_new_tokens=10,
             repetition_penalty=1.0008,
+            temperature=0.01
             )
         return self.tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
 
@@ -123,18 +124,18 @@ class PythiaHelper:
 model_id = "EleutherAI/pythia-1B-deduped"
 model = PythiaHelper(model_id=model_id)
 
-# prompt = "The most important political question in the world is"
-prompt = "Liam knows that if he finishes his work early for the day, he will order pizza for dinner. However, on this particular day, he decided against ordering pizza. Question: Does this imply that Liam didn't finish his work early?\n\nThe answer is "
+prompt = "Artificial Intelligence will impact the world in many ways, particularly in the field of"
+# prompt = "Liam knows that if he finishes his work early for the day, he will order pizza for dinner. However, on this particular day, he decided against ordering pizza. Question: Does this imply that "
 
 
 model.reset_all()
 
 model.decode_all_layers(prompt, 
                         topk=10,
-                        print_attn_mech=True, 
-                        print_intermediate_res=True, 
-                        print_mlp=True, 
+                        print_attn_mech=False, 
+                        print_intermediate_res=False, 
+                        print_mlp=False, 
                         print_block=True
                         )
-output = model.generate_text(prompt, max_length=10)
+output = model.generate_text(prompt, max_length=100)
 print(output)
