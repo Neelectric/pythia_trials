@@ -5,6 +5,9 @@ import lm_eval
 import evaluate
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
 
 # attempt to auto recognize the device!
 device = "cpu"
@@ -20,6 +23,10 @@ refs = api.list_repo_refs(model_id)
 revisions = [ref.ref.split('/')[-1] for ref in refs.branches]
 revisions.reverse() 
 revisions.pop(0)
+print(len(revisions))
+
+accuracies = []
+revision_list = []
 
 for revision in tqdm(revisions, dynamic_ncols=True):
     print(revision)
@@ -35,9 +42,32 @@ for revision in tqdm(revisions, dynamic_ncols=True):
         model=wrapped_model,
         tasks=["arc_easy"],
         num_fewshot=0,
-        batch_size="auto"
+        batch_size=64,
     )
+    accuracy = results["results"]["arc_easy"]["acc,none"]
+    accuracies.append(accuracy)
+    if len(accuracies) == 4:
+        break
     del model
-    break
+
 
 print("All evaluations completed")
+
+data = pd.DataFrame({
+    'Revisions': revision_list,
+    'Accuracy': accuracies
+})
+
+# Plotting the revisions against the accuracies using seaborn
+plt.figure(figsize=(10, 6))
+sns.lineplot(data=data, x='Revisions', y='Accuracy', marker='o')
+plt.xlabel('Revisions (Step Counts)')
+plt.ylabel('Accuracy')
+plt.title('Model Accuracy vs Revisions (Step Counts)')
+plt.xticks(rotation=45)
+plt.grid(True)
+
+# Save the plot as an image file
+plt.savefig('model_accuracy_vs_revisions.png')
+
+plt.show()

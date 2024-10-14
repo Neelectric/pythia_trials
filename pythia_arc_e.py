@@ -14,8 +14,8 @@ base_command = [
     "--model", "hf",
     "--model_args", "pretrained=EleutherAI/pythia-14m",
     "--tasks", "arc_easy",
-    "--device", "cuda:0",
-    "--batch_size", "32",
+    "--device", "mps",
+    "--batch_size", "512",
     "--output_path", "output/pythia_arc",
     # "--use_cache", "output/pythia_arc"
 ]
