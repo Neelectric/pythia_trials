@@ -24,28 +24,21 @@ elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
     device = "mps"
 print(f"using device {device}")
 
-model_id_olmo_1b_base = "allenai/OLMo-1B-0724-hf"
-model_id_olmo_1b_sft = "hamishivi/OLMo-1B-0724-SFT-hf"
-model_id_olmo_1b_inst = "hamishivi/OLMo-1B-0724-Instruct-hf"
+model_id_pythia = "EleutherAI/pythia-2.8B-deduped"
+cache_dir_pythia = "./models/" + model_id_pythia
 
-model_id_olmo_7b_base = "allenai/OLMo-7B-0724-hf"
-model_id_olmo_7b_sft = "allenai/OLMo-7B-0724-SFT-hf"
-model_id_olmo_7b_inst = "allenai/OLMo-7B-0724-Instruct-hf"
 
-model_id_olmo = model_id_olmo_7b_base
-cache_dir_olmo = "./models/" + model_id_olmo
-
-print(f"loading {model_id_olmo}")
+print(f"loading {model_id_pythia}")
 model = AutoModelForCausalLM.from_pretrained(
-    pretrained_model_name_or_path=model_id_olmo,
-    revision="step382000-tokens1601B",
-    cache_dir=cache_dir_olmo,
+    pretrained_model_name_or_path=model_id_pythia,
+    # revision="step4000-tokens16B",
+    cache_dir=cache_dir_pythia,
     device_map=device,
     )
 
 tokenizer = AutoTokenizer.from_pretrained(
-    pretrained_model_name_or_path=model_id_olmo,
-    cache_dir=cache_dir_olmo,
+    pretrained_model_name_or_path=model_id_pythia,
+    cache_dir=cache_dir_pythia,
     )
 
 with open("datasets/2digit_sum_dataset.json") as f:
