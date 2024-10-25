@@ -32,7 +32,7 @@ model_id_olmo_7b_base = "allenai/OLMo-7B-0724-hf"
 model_id_olmo_7b_sft = "allenai/OLMo-7B-0724-SFT-hf"
 model_id_olmo_7b_inst = "allenai/OLMo-7B-0724-Instruct-hf"
 
-model_id_olmo = model_id_olmo_7b_base
+model_id_olmo = model_id_olmo_1b_base
 cache_dir_olmo = "./models/" + model_id_olmo
 
 print(f"loading {model_id_olmo}")
@@ -51,24 +51,24 @@ tokenizer = AutoTokenizer.from_pretrained(
 with open("datasets/2digit_sum_dataset.json") as f:
     dataset = json.load(f)
 
-bsz = 10
+bsz = 20
 
 n_correct = 0
 n_total = 0
 
-for i in tqdm(range(1020, len(dataset), bsz), dynamic_ncols=True):
+for i in tqdm(range(0, len(dataset), bsz), dynamic_ncols=True):
     instance_batch = dataset[i : i+bsz]
-    print(f"selecting items from {i} to {i + bsz}")
-    print(f"batch is now {instance_batch}")
+    # print(f"selecting items from {i} to {i + bsz}")
+    # print(f"batch is now {instance_batch}")
     question_batch = [instance[0] for instance in instance_batch]
     answer_batch = [instance[1] for instance in instance_batch]
-    print(question_batch)
-    print(answer_batch)
+    # print(question_batch)
+    # print(answer_batch)
     prompts = [f"Question. What is {question}? Answer." for question in question_batch]
-    print(prompts)
+    # print(prompts)
     inputs = tokenizer(prompts, return_tensors="pt").to(model.device)
     input_lengths = [len(input) for input in inputs["input_ids"]]
-    print(input_lengths)
+    # print(input_lengths)
     # print(inputs)
     output_ids = model.generate(**inputs, 
                             max_new_tokens=10, 
@@ -79,9 +79,8 @@ for i in tqdm(range(1020, len(dataset), bsz), dynamic_ncols=True):
         if answer in prediction:
             n_correct +=1
         n_total +=1
-    tqdm.write(str(prediction_batch))
-    break
-print(f"Out of total {n_total} questions, we got {n_correct} correct.")
+    # tqdm.write(str(prediction_batch))
+print(f"Out of total {n_total} questions, we got {n_correct} correct. This is {n_correct/n_total:.2f}")
     
 
 
