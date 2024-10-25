@@ -24,7 +24,7 @@ elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
     device = "mps"
 print(f"using device {device}")
 
-model_id_pythia = "EleutherAI/pythia-6.9B-deduped"
+model_id_pythia = "EleutherAI/pythia-2.8B-deduped"
 cache_dir_pythia = "./models/" + model_id_pythia
 
 model = GPTNeoXForCausalLM.from_pretrained(
@@ -48,8 +48,8 @@ modus_ponens = "first_order_logic/modus_ponens/data_instances.json"
 with open(eval_bqa+modus_ponens, "r") as file:
     data = json.load(file)
 
-print(data["type"])
-print(data["axiom"])
+# print(data["type"])
+# print(data["axiom"])
 samples = data["samples"]
 sample = samples[0]
 
@@ -57,13 +57,26 @@ context = sample["context"]
 qa_pair = sample["qa_pairs"][0]
 question = qa_pair["question"]
 answer = qa_pair["answer"]
-prompt = "Question. " + context + " " + question + " Answer. "
+# prompt = "Question. " + context + " " + question + " Answer. "
+
+prompt = """
+Answer the following two-digit addition tasks:
+14 + 41 = 55
+43 + 42 = 85
+13 + 01 = 14
+19 + 21 ="""
+
+prompt = "Calculate 19 + 21"
 
 
 inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+print(inputs)
+input_ids = inputs["input_ids"].tolist()[0]
+for elt in input_ids:
+    print(tokenizer.decode(elt, skip_special_tokens=False))
 tokens = model.generate(**inputs,
                         do_sample=False,
-                        max_new_tokens=5,
+                        max_new_tokens=10,
                         # repetition_penalty=1.0008,
                         )
 output = tokenizer.decode(tokens[0], clean_up_tokenization_spaces = False)
