@@ -32,7 +32,7 @@ model_id_olmo_7b_base = "allenai/OLMo-7B-0724-hf"
 model_id_olmo_7b_sft = "allenai/OLMo-7B-0724-SFT-hf"
 model_id_olmo_7b_inst = "allenai/OLMo-7B-0724-Instruct-hf"
 
-model_id_olmo = model_id_olmo_7b_sft
+model_id_olmo = model_id_olmo_7b_inst
 cache_dir_olmo = "./models/" + model_id_olmo
 
 print(f"loading {model_id_olmo}")
@@ -48,17 +48,27 @@ tokenizer = AutoTokenizer.from_pretrained(
     cache_dir=cache_dir_olmo,
     )
 
-for i in range(5):
-    message = ""
-    equation = input()
-    message += equation
-    # inputs = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
-    inputs = tokenizer(message, return_tensors="pt").to(model.device)
+with open("datasets/2digit_sum_dataset.json") as f:
+    dataset = json.load(f)
 
-    response = model.generate(**inputs, 
-                            max_new_tokens=50, 
-                            do_sample=False, 
-                            )
-    print(tokenizer.batch_decode(response, skip_special_tokens=True)[0])
-    print("-"*100)
+bsz = 10
 
+
+for i in tqdm(range(0, len(dataset), bsz), dynamic_ncols=True):
+    batch = dataset[i*bsz : (i+bsz) + bsz]
+    print(f"selecting items from {i*bsz} to {(i+bsz) + bsz}")
+    print(f"batch is now {batch}")
+
+    # question = instance[0]
+    # answer = instance[1]
+
+    # prompt = f"Question. What is {question}? Answer."
+    # inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+    # output_ids = model.generate(**inputs, 
+    #                         max_new_tokens=20, 
+    #                         do_sample=False, 
+    #                         )
+    # prediction = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0]
+    # tqdm.write(prediction)
+    break
+    
