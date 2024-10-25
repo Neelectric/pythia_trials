@@ -32,7 +32,7 @@ model_id_olmo_7b_base = "allenai/OLMo-7B-0724-hf"
 model_id_olmo_7b_sft = "allenai/OLMo-7B-0724-SFT-hf"
 model_id_olmo_7b_inst = "allenai/OLMo-7B-0724-Instruct-hf"
 
-model_id_olmo = model_id_olmo_7b_inst
+model_id_olmo = model_id_olmo_7b_base
 cache_dir_olmo = "./models/" + model_id_olmo
 
 print(f"loading {model_id_olmo}")
@@ -53,14 +53,37 @@ with open("datasets/2digit_sum_dataset.json") as f:
 
 bsz = 10
 
+n_correct = 0
+n_total = 0
 
-for i in tqdm(range(0, len(dataset), bsz), dynamic_ncols=True):
-    batch = dataset[i*bsz : (i+bsz) + bsz]
-    print(f"selecting items from {i*bsz} to {(i+bsz) + bsz}")
-    print(f"batch is now {batch}")
+for i in tqdm(range(1020, len(dataset), bsz), dynamic_ncols=True):
+    instance_batch = dataset[i : i+bsz]
+    print(f"selecting items from {i} to {i + bsz}")
+    print(f"batch is now {instance_batch}")
+    question_batch = [instance[0] for instance in instance_batch]
+    answer_batch = [instance[1] for instance in instance_batch]
+    print(question_batch)
+    print(answer_batch)
+    prompts = [f"Question. What is {question}? Answer." for question in question_batch]
+    print(prompts)
+    inputs = tokenizer(prompts, return_tensors="pt").to(model.device)
+    input_lengths = [len(input) for input in inputs["input_ids"]]
+    print(input_lengths)
+    # print(inputs)
+    output_ids = model.generate(**inputs, 
+                            max_new_tokens=10, 
+                            do_sample=False, 
+                            )
+    prediction_batch = tokenizer.batch_decode(output_ids[:, 10:], skip_special_tokens=True)
+    for prediction, answer in zip(prediction_batch, answer_batch):
+        if answer in prediction:
+            n_correct +=1
+        n_total +=1
+    tqdm.write(str(prediction_batch))
+    break
+print(f"Out of total {n_total} questions, we got {n_correct} correct.")
+    
 
-    # question = instance[0]
-    # answer = instance[1]
 
     # prompt = f"Question. What is {question}? Answer."
     # inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
@@ -70,5 +93,5 @@ for i in tqdm(range(0, len(dataset), bsz), dynamic_ncols=True):
     #                         )
     # prediction = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0]
     # tqdm.write(prediction)
-    break
+    
     
