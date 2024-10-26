@@ -7,6 +7,7 @@ import random
 # external imports
 from transformers import GPTNeoXForCausalLM, AutoModelForCausalLM, AutoTokenizer, OlmoForCausalLM
 import torch
+import numpy as np
 from tqdm import tqdm
 from datasets import load_dataset
 import seaborn as sns
@@ -37,15 +38,23 @@ model = IntermediateDecoder(model_id=model_id)
 
 with open("datasets/2digit_sum_dataset.json") as f:
     two_digit_dataset = json.load(f)
-
 random.shuffle(two_digit_dataset)
-first_10 = two_digit_dataset[0:10]
+n = 100
+first_n = two_digit_dataset[0:n]
 
-questions = [elt[0] for elt in first_10]
-answers = [elt[1] for elt in first_10]
+colors = itertools.cycle(sns.color_palette("tab10"))
+sns.set(style="whitegrid")
+plt.figure(figsize=(10, 6))
+
+questions = [elt[0] for elt in first_n]
+answers = [elt[1] for elt in first_n]
 all_probabilities = []
+avg_probabilities = {i: [] for i in range(32)}
+plotted_counter = 0
 
-for question, answer in zip(questions, answers):
+for i in tqdm(range(len(questions)), dynamic_ncols=True):
+    question = questions[i]
+    answer = answers[i]
     prompt = f"Question: What is {question}? Answer: {question}="
     model.reset_all()
     block_activations = model.decode_all_layers(prompt, 
@@ -62,27 +71,29 @@ for question, answer in zip(questions, answers):
     for block_activation in block_activations:
         block_num = int(block_activation[0].split()[1])
         token_probs = dict(block_activation[1])
-        # print(block_num)
-        # print(token_probs)
         probability_correct = token_probs.get(answer, 0)
         block_numbers.append(block_num)
         probabilities.append(probability_correct)
-    all_probabilities.append(probabilities)
+        avg_probabilities[block_num].append(probability_correct)
+    if plotted_counter < 10:
+        sns.lineplot(x=block_numbers, y=probabilities, marker='o', label=f"Probability of token '{answer}' for question {question}", color=next(colors), alpha=0.3)
+    plotted_counter += 1
 
-colors = itertools.cycle(sns.color_palette("tab10"))
+avg_prob_values = [np.mean(avg_probabilities[block]) for block in block_numbers]
+sns.lineplot(x=block_numbers, y=avg_prob_values, marker='o', color="black", label=f"Average Probability Across {n} prompts", linewidth=3)
 
-sns.set(style="whitegrid")
-plt.figure(figsize=(10, 6))
-for probabilities, answer in zip(all_probabilities, answers):
-    sns.lineplot(x=block_numbers, y=probabilities, marker='o', label=f"Probability of '{answer}'", color=next(colors))
-    print("PRINTING")
-    print(probabilities)
-    print("-"*100)
-plt.xlabel("Block Number")
-plt.ylabel("Probability (%)")
-plt.title("Probability of Tokens Across Decoder Blocks")
+
+plt.xlabel("Block Number", fontsize=17)
+plt.ylabel("Probability (%)", fontsize=17)
+plt.title(f"Probability of Correct Token Across Decoder Blocks of {model_id}", fontsize=18)
+
 plt.ylim(0, 100)
+plt.xlim(10, 32)  
+plt.xticks(block_numbers[7:], fontsize=14)  
+plt.yticks(fontsize=14)
 plt.gca().yaxis.set_major_formatter(PercentFormatter())
-plt.legend()
-plt.show()
 
+plt.grid(visible=True, which='both', axis='both', linestyle='--', linewidth=0.7)
+plt.legend(fontsize=13)
+plt.savefig(f"figures/2digit_accuracy_intdecoding/{model_id}.pdf")
+plt.show()
