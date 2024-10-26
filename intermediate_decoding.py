@@ -1,5 +1,30 @@
+# system imports
+import time
+import json
+
+# external imports
+from transformers import GPTNeoXForCausalLM, AutoModelForCausalLM, AutoTokenizer, OlmoForCausalLM
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from tqdm import tqdm
+from datasets import load_dataset
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# local imports
+
+# enivornment setup
+torch.manual_seed(42)
+torch.cuda.manual_seed(42)
+torch.mps.manual_seed(42)
+
+# -------------------------Start of Script------------------------- #
+# attempt to auto recognize the device!
+device = "cpu"
+if torch.cuda.is_available(): 
+    device = "cuda"
+elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available(): 
+    device = "mps"
+print(f"using device {device}")
 
 class AttnWrapper(torch.nn.Module):
     def __init__(self, attn):
@@ -66,9 +91,7 @@ class BlockOutputWrapper(torch.nn.Module):
 class IntermediateDecoder:
     def __init__(self, model_id="EleutherAI/pythia-14m"):
         cache_dir = "./models/"
-        if torch.cuda.is_available(): self.device = "cuda"
-        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available(): self.device = "mps"
-        else: self.device = "cpu"
+        self.device = device
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
@@ -140,7 +163,7 @@ class IntermediateDecoder:
                 decoded_mlp_activations = self.return_decoded_activations(layer.mlp_output_unembedded, 'MLP output', topk)
                 if printing: print(decoded_mlp_activations)
             if print_block:
-                decoded_block_activations = self.return_decoded_activations(layer.block_output_unembedded, 'Block output', topk)
+                decoded_block_activations = self.return_decoded_activations(layer.block_output_unembedded, f'Block {i} output', topk)
                 if printing: print(decoded_block_activations)
                 block_activations.append(decoded_block_activations)
             print("\n")
@@ -162,8 +185,10 @@ block_activations = model.decode_all_layers(prompt,
                         print_mlp=False, 
                         print_block=True
                         )
-
-print(block_activations)
-
 # output = model.generate_text(prompt, max_new_tokens=7,)
 # print(output)
+
+for block_activation in block_activations:
+    print(block_activation)
+
+
