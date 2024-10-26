@@ -89,14 +89,14 @@ class IntermediateDecoder:
         for i, layer in enumerate(self.model.base_model.layers):
             self.model.base_model.layers[i] = BlockOutputWrapper(layer, embed_out, final_layer_norm, i)
 
-    def generate_text(self, prompt, max_length=100):
+    def generate_text(self, prompt, max_new_tokens=100):
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
         generate_ids = self.model.generate(
             **inputs,
             do_sample=False,
-            max_new_tokens=10,
-            repetition_penalty=1.0008,
-            temperature=0.01
+            max_new_tokens=max_new_tokens,
+            # repetition_penalty=1.0008,
+            temperature=None
             )
         return self.tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
 
@@ -143,12 +143,8 @@ class IntermediateDecoder:
 model_id = "EleutherAI/pythia-6.9B-deduped"
 model = IntermediateDecoder(model_id=model_id)
 
-prompt = "Question: What is 23+71? Answer: 23+71="
-# prompt = "Liam knows that if he finishes his work early for the day, he will order pizza for dinner. However, on this particular day, he decided against ordering pizza. Question: Does this imply that "
-
-
+prompt = "Question: What is 19+21? Answer: 19+21="
 model.reset_all()
-
 model.decode_all_layers(prompt, 
                         topk=5,
                         print_attn_mech=False, 
@@ -156,5 +152,5 @@ model.decode_all_layers(prompt,
                         print_mlp=False, 
                         print_block=True
                         )
-output = model.generate_text(prompt, max_length=20)
+output = model.generate_text(prompt, max_new_tokens=10,)
 print(output)

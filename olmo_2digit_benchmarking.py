@@ -32,13 +32,13 @@ model_id_olmo_7b_base = "allenai/OLMo-7B-0724-hf"
 model_id_olmo_7b_sft = "allenai/OLMo-7B-0724-SFT-hf"
 model_id_olmo_7b_inst = "allenai/OLMo-7B-0724-Instruct-hf"
 
-model_id_olmo = model_id_olmo_7b_base
+model_id_olmo = model_id_olmo_1b_base
 cache_dir_olmo = "./models/" + model_id_olmo
 
 print(f"loading {model_id_olmo}")
 model = AutoModelForCausalLM.from_pretrained(
     pretrained_model_name_or_path=model_id_olmo,
-    revision="step382000-tokens1601B",
+    # revision="step382000-tokens1601B",
     cache_dir=cache_dir_olmo,
     device_map=device,
     )
@@ -64,7 +64,7 @@ for i in tqdm(range(0, len(dataset), bsz), dynamic_ncols=True):
     answer_batch = [instance[1] for instance in instance_batch]
     # print(question_batch)
     # print(answer_batch)
-    prompts = [f"Question. What is {question}? Answer." for question in question_batch]
+    prompts = [f"Question: What is {question}? Answer: {question}=" for question in question_batch]
     # print(prompts)
     inputs = tokenizer(prompts, return_tensors="pt").to(model.device)
     input_lengths = [len(input) for input in inputs["input_ids"]]
@@ -80,5 +80,5 @@ for i in tqdm(range(0, len(dataset), bsz), dynamic_ncols=True):
             n_correct +=1
         n_total +=1
     # tqdm.write(str(prediction_batch))
-print(f"Out of total {n_total} questions, we got {n_correct} correct. This is {n_correct/n_total:.2f}")
+print(f"Out of total {n_total} questions, we got {n_correct} correct. This is {(n_correct/n_total)*100:.4f}%")
     
