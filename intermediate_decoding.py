@@ -117,40 +117,53 @@ class IntermediateDecoder:
         for layer in self.model.base_model.layers:
             layer.reset()
 
-    def print_decoded_activations(self, decoded_activations, label, topk):
+    def return_decoded_activations(self, decoded_activations, label, topk):
         softmaxed = torch.nn.functional.softmax(decoded_activations[0][-1], dim=-1)
         values, indices = torch.topk(softmaxed, topk)
         probs_percent = [int(v * 100) for v in values.tolist()]
         tokens = self.tokenizer.batch_decode(indices.unsqueeze(-1))
-        print(label, list(zip(tokens, probs_percent)))
+        return (label, list(zip(tokens, probs_percent)))
 
 
-    def decode_all_layers(self, text, topk=2, print_attn_mech=True, print_intermediate_res=True, print_mlp=True, print_block=True):
+    def decode_all_layers(self, text, topk=2, printing=True, print_attn_mech=True, print_intermediate_res=True, print_mlp=True, print_block=True):
         self.get_logits(text)
+        block_activations = []
         for i, layer in enumerate(self.model.base_model.layers):
-            print(f'Layer {i}: Decoded intermediate outputs')
+            if printing: print(f'Layer {i}: Decoded intermediate outputs')
             if print_attn_mech:
-                self.print_decoded_activations(layer.attn_mech_output_unembedded, 'Attention mechanism', topk)
+                decoded_attn_mech = self.return_decoded_activations(layer.attn_mech_output_unembedded, 'Attention mechanism', topk)
+                if printing: print(decoded_attn_mech)
             if print_intermediate_res:
-                self.print_decoded_activations(layer.intermediate_res_unembedded, 'Intermediate residual stream', topk)
+                decoded_intermediate_res_stream = self.return_decoded_activations(layer.intermediate_res_unembedded, 'Intermediate residual stream', topk)
+                if printing: print(decoded_intermediate_res_stream)
             if print_mlp:
-                self.print_decoded_activations(layer.mlp_output_unembedded, 'MLP output', topk)
+                decoded_mlp_activations = self.return_decoded_activations(layer.mlp_output_unembedded, 'MLP output', topk)
+                if printing: print(decoded_mlp_activations)
             if print_block:
-                self.print_decoded_activations(layer.block_output_unembedded, 'Block output', topk)
+                decoded_block_activations = self.return_decoded_activations(layer.block_output_unembedded, 'Block output', topk)
+                if printing: print(decoded_block_activations)
+                block_activations.append(decoded_block_activations)
             print("\n")
+        return block_activations
 
 # model_id = "allenai/OLMo-7B-0724-hf"
 model_id = "EleutherAI/pythia-6.9B-deduped"
 model = IntermediateDecoder(model_id=model_id)
 
-prompt = "Question: What is 19+21? Answer: 19+21="
+
+question = "54+45"
+prompt = f"Question: What is {question}? Answer: {question}="
 model.reset_all()
-model.decode_all_layers(prompt, 
+block_activations = model.decode_all_layers(prompt, 
                         topk=5,
+                        printing=False,
                         print_attn_mech=False, 
                         print_intermediate_res=False, 
                         print_mlp=False, 
                         print_block=True
                         )
-output = model.generate_text(prompt, max_new_tokens=10,)
-print(output)
+
+print(block_activations)
+
+# output = model.generate_text(prompt, max_new_tokens=7,)
+# print(output)
