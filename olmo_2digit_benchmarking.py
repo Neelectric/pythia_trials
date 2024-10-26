@@ -82,15 +82,3 @@ for i in tqdm(range(0, len(dataset), bsz), dynamic_ncols=True):
     # tqdm.write(str(prediction_batch))
 print(f"Out of total {n_total} questions, we got {n_correct} correct. This is {n_correct/n_total:.2f}")
     
-
-
-    # prompt = f"Question. What is {question}? Answer."
-    # inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-    # output_ids = model.generate(**inputs, 
-    #                         max_new_tokens=20, 
-    #                         do_sample=False, 
-    #                         )
-    # prediction = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0]
-    # tqdm.write(prediction)
-    
-    

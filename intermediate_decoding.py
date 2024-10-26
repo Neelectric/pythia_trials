@@ -20,13 +20,19 @@ class AttnWrapper(torch.nn.Module):
         self.add_tensor = None
 
 class BlockOutputWrapper(torch.nn.Module):
-    def __init__(self, block, unembed_matrix, norm):
+    def __init__(self, block, unembed_matrix, norm, layer_id):
         super().__init__()
         self.block = block
         self.unembed_matrix = unembed_matrix
         self.norm = norm
-
-        self.block.attention = AttnWrapper(self.block.attention)
+        self.layer_id = layer_id
+        if hasattr(self.block, "self_attn"):
+            attention = self.block.self_attn
+        elif hasattr(self.block, "attention"):
+            attention = self.block.attention
+        else:
+            raise TypeError("The attention modules of the decoder layers could not be recognised.")
+        self.block.attention = AttnWrapper(attention)
         self.post_attention_layernorm = self.block.post_attention_layernorm
 
         self.attn_mech_output_unembedded = None
@@ -39,6 +45,8 @@ class BlockOutputWrapper(torch.nn.Module):
         output = self.block(*args, **kwargs)
         self.block_output_unembedded = self.unembed_matrix(self.norm(output[0]))
         attn_output = self.block.attention.activations
+        if attn_output is None:
+            attn_output = output[1]
         self.attn_mech_output_unembedded = self.unembed_matrix(self.norm(attn_output))
         attn_output += args[0]
         self.intermediate_res_unembedded = self.unembed_matrix(self.norm(attn_output))
@@ -55,7 +63,7 @@ class BlockOutputWrapper(torch.nn.Module):
     def get_attn_activations(self):
         return self.block.attention.activations
 
-class PythiaHelper:
+class IntermediateDecoder:
     def __init__(self, model_id="EleutherAI/pythia-14m"):
         cache_dir = "./models/"
         if torch.cuda.is_available(): self.device = "cuda"
@@ -65,10 +73,21 @@ class PythiaHelper:
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
             cache_dir=cache_dir + model_id,
-            device_map=self.device
+            device_map=self.device,
+            attn_implementation="eager",
             )
+        if "OLMo" in model_id:
+            embed_out = self.model.lm_head
+            final_layer_norm = self.model.base_model.norm
+            self.model.config.output_attentions = True
+            self.model.config.output_hidden_states = True
+        elif "pythia" in model_id:
+            embed_out = self.model.embed_out
+            final_layer_norm = self.model.base_model.final_layer_norm
+        else:
+            raise TypeError("The passed model id was not parsed as OLMo or pythia and so wasn't recognised.")
         for i, layer in enumerate(self.model.base_model.layers):
-            self.model.base_model.layers[i] = BlockOutputWrapper(layer, self.model.embed_out, self.model.base_model.final_layer_norm)
+            self.model.base_model.layers[i] = BlockOutputWrapper(layer, embed_out, final_layer_norm, i)
 
     def generate_text(self, prompt, max_length=100):
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
@@ -83,8 +102,9 @@ class PythiaHelper:
 
     def get_logits(self, prompt):
         inputs = self.tokenizer(prompt, return_tensors="pt")
+        input_ids = inputs.input_ids.to(self.device)
         with torch.no_grad():
-          logits = self.model(inputs.input_ids.to(self.device)).logits
+          logits = self.model(input_ids).logits
           return logits
 
     def set_add_attn_output(self, layer, add_output):
@@ -108,8 +128,6 @@ class PythiaHelper:
     def decode_all_layers(self, text, topk=2, print_attn_mech=True, print_intermediate_res=True, print_mlp=True, print_block=True):
         self.get_logits(text)
         for i, layer in enumerate(self.model.base_model.layers):
-            # if i != 5:
-            #     continue
             print(f'Layer {i}: Decoded intermediate outputs')
             if print_attn_mech:
                 self.print_decoded_activations(layer.attn_mech_output_unembedded, 'Attention mechanism', topk)
@@ -121,21 +139,22 @@ class PythiaHelper:
                 self.print_decoded_activations(layer.block_output_unembedded, 'Block output', topk)
             print("\n")
 
-model_id = "EleutherAI/pythia-1B-deduped"
-model = PythiaHelper(model_id=model_id)
+# model_id = "allenai/OLMo-7B-0724-hf"
+model_id = "EleutherAI/pythia-6.9B-deduped"
+model = IntermediateDecoder(model_id=model_id)
 
-prompt = "Artificial Intelligence will impact the world in many ways, particularly in the field of"
+prompt = "Question: What is 23+71? Answer: 23+71="
 # prompt = "Liam knows that if he finishes his work early for the day, he will order pizza for dinner. However, on this particular day, he decided against ordering pizza. Question: Does this imply that "
 
 
 model.reset_all()
 
 model.decode_all_layers(prompt, 
-                        topk=10,
+                        topk=5,
                         print_attn_mech=False, 
                         print_intermediate_res=False, 
                         print_mlp=False, 
                         print_block=True
                         )
-output = model.generate_text(prompt, max_length=100)
+output = model.generate_text(prompt, max_length=20)
 print(output)
