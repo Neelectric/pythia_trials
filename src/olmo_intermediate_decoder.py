@@ -66,8 +66,6 @@ class BlockOutputWrapper(torch.nn.Module):
         output = self.block(*args, **kwargs)
         self.block_output_unembedded = self.unembed_matrix(self.norm(output[0]))
         self_attn_output = self.block.self_attn.activations
-        if self_attn_output is None:
-            self_attn_output = output[1]
         self.self_attn_mech_output_unembedded = self.unembed_matrix(self.norm(self_attn_output))
         self_attn_output += args[0]
         self.intermediate_res_unembedded = self.unembed_matrix(self.norm(self_attn_output))
@@ -141,12 +139,12 @@ class OlmoIntermediateDecoder:
         return (label, list(zip(tokens, probs_percent)))
 
 
-    def decode_all_layers(self, text, topk=2, printing=True, print_self_attn_mech=True, print_intermediate_res=True, print_mlp=True, print_block=True):
+    def decode_all_layers(self, text, topk=2, printing=True, print_attn_mech=True, print_intermediate_res=True, print_mlp=True, print_block=True):
         self.get_logits(text)
         block_activations = []
         for i, layer in enumerate(self.model.base_model.layers):
             if printing: print(f'Layer {i}: Decoded intermediate outputs')
-            if print_self_attn_mech:
+            if print_attn_mech:
                 decoded_self_attn_mech = self.return_decoded_activations(layer.self_attn_mech_output_unembedded, 'Attention mechanism', topk)
                 if printing: print(decoded_self_attn_mech)
             if print_intermediate_res:

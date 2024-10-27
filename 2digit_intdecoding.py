@@ -33,7 +33,7 @@ elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
 print(f"using device {device}")
 
 
-model_id = "allenai/OLMo-1B-0724-hf"
+model_id = "allenai/OLMo-7B-0724-hf"
 # model_id = "EleutherAI/pythia-14m"
 print(f"Loading {model_id}...")
 if "pythia" in model_id:
@@ -46,9 +46,9 @@ else:
 with open("datasets/2digit_sum_dataset.json") as f:
     two_digit_dataset = json.load(f)
 random.shuffle(two_digit_dataset)
+n = len(two_digit_dataset)
 n = 100
-first_n = two_digit_dataset[:]
-n = len(first_n)
+first_n = two_digit_dataset[:n]
 
 colors = itertools.cycle(sns.color_palette("tab10"))
 sns.set(style="whitegrid")
