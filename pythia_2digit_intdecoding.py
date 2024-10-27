@@ -33,7 +33,8 @@ print(f"using device {device}")
 
 
 # model_id = "allenai/OLMo-7B-0724-hf"
-model_id = "EleutherAI/pythia-1B-deduped"
+model_id = "EleutherAI/pythia-2.8B-deduped"
+print(f"Loading {model_id}...")
 model = IntermediateDecoder(model_id=model_id)
 
 with open("datasets/2digit_sum_dataset.json") as f:
