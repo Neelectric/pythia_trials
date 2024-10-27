@@ -50,15 +50,11 @@ class BlockOutputWrapper(torch.nn.Module):
         self.unembed_matrix = unembed_matrix
         self.norm = norm
         self.layer_id = layer_id
-        if hasattr(self.block, "self_attn"):
-            attention = self.block.self_attn
-        elif hasattr(self.block, "attention"):
-            attention = self.block.attention
-        else:
-            raise TypeError("The attention modules of the decoder layers could not be recognised.")
+
+        attention = self.block.attention
         self.block.attention = AttnWrapper(attention)
         self.post_attention_layernorm = self.block.post_attention_layernorm
-
+        
         self.attn_mech_output_unembedded = None
         self.intermediate_res_unembedded = None
         self.mlp_output_unembedded = None
@@ -87,7 +83,7 @@ class BlockOutputWrapper(torch.nn.Module):
     def get_attn_activations(self):
         return self.block.attention.activations
 
-class IntermediateDecoder:
+class PythiaIntermediateDecoder:
     def __init__(self, model_id="EleutherAI/pythia-14m"):
         cache_dir = "./models/"
         self.device = device
@@ -98,16 +94,8 @@ class IntermediateDecoder:
             device_map=self.device,
             attn_implementation="eager",
             )
-        if "OLMo" in model_id:
-            embed_out = self.model.lm_head
-            final_layer_norm = self.model.base_model.norm
-            self.model.config.output_attentions = True
-            self.model.config.output_hidden_states = True
-        elif "pythia" in model_id:
-            embed_out = self.model.embed_out
-            final_layer_norm = self.model.base_model.final_layer_norm
-        else:
-            raise TypeError("The passed model id was not parsed as OLMo or pythia and so wasn't recognised.")
+        embed_out = self.model.embed_out
+        final_layer_norm = self.model.base_model.final_layer_norm
         for i, layer in enumerate(self.model.base_model.layers):
             self.model.base_model.layers[i] = BlockOutputWrapper(layer, embed_out, final_layer_norm, i)
 
