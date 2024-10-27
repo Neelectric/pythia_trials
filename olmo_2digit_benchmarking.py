@@ -66,11 +66,12 @@ for i in tqdm(range(0, len(dataset), bsz), dynamic_ncols=True):
     output_ids = model.generate(**inputs, 
                             max_new_tokens=10, 
                             do_sample=False, 
+                            pad_token_id=tokenizer.eos_token_id,
                             )
     prediction_batch = tokenizer.batch_decode(output_ids[:, 10:], skip_special_tokens=True)
     for prediction, answer in zip(prediction_batch, answer_batch):
         if answer in prediction:
             n_correct +=1
         n_total +=1
-print(f"Out of total {n_total} questions, we got {n_correct} correct. This is {(n_correct/n_total)*100:.4f}%")
+print(f"Out of total {n_total} questions, we got {n_correct} correct. This is {(n_correct/n_total)*100:.3f}%")
     

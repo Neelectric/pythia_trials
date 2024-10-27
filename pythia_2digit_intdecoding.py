@@ -33,14 +33,15 @@ print(f"using device {device}")
 
 
 # model_id = "allenai/OLMo-7B-0724-hf"
-model_id = "EleutherAI/pythia-6.9B-deduped"
+model_id = "EleutherAI/pythia-1B-deduped"
 model = IntermediateDecoder(model_id=model_id)
 
 with open("datasets/2digit_sum_dataset.json") as f:
     two_digit_dataset = json.load(f)
 random.shuffle(two_digit_dataset)
 n = 100
-first_n = two_digit_dataset[0:n]
+first_n = two_digit_dataset[:]
+n = len(first_n)
 
 colors = itertools.cycle(sns.color_palette("tab10"))
 sns.set(style="whitegrid")
@@ -88,12 +89,14 @@ plt.ylabel("Probability (%)", fontsize=17)
 plt.title(f"Probability of Correct Token Across Decoder Blocks of {model_id}", fontsize=18)
 
 plt.ylim(0, 100)
-plt.xlim(10, 32)  
-plt.xticks(block_numbers[7:], fontsize=14)  
+num_layers = len(model.model.base_model.layers)
+x_min = num_layers // 5
+plt.xlim(x_min, num_layers)  
+plt.xticks(block_numbers[x_min:], fontsize=14)  
 plt.yticks(fontsize=14)
 plt.gca().yaxis.set_major_formatter(PercentFormatter())
 
 plt.grid(visible=True, which='both', axis='both', linestyle='--', linewidth=0.7)
-plt.legend(fontsize=13)
+plt.legend(fontsize=13, loc='upper left',)
 plt.savefig(f"figures/2digit_accuracy_intdecoding/{model_id}.pdf")
 plt.show()
