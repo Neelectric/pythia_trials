@@ -2,26 +2,31 @@ import torch
 from tuned_lens.nn.lenses import TunedLens, LogitLens
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-
-device = "cpu"
-model_id_pythia = "EleutherAI/pythia-410m-deduped"
-cache_dir_pythia = "./models/" + model_id_pythia
-# To try a diffrent modle / lens check if the lens is avalible then modify this code
-model = AutoModelForCausalLM.from_pretrained(
-  pretrained_model_name_or_path=model_id_pythia,
-  cache_dir=cache_dir_pythia,
-#   device_map=device,
-)
-
-model = model.to(device)
-tokenizer = AutoTokenizer.from_pretrained(model_id_pythia)
-tuned_lens = TunedLens.from_model_and_pretrained(model)
-tuned_lens = tuned_lens.to(device)
-logit_lens = LogitLens.from_model(model)
-
 from tuned_lens.plotting import PredictionTrajectory
 import ipywidgets as widgets
 from plotly import graph_objects as go
+
+
+
+
+
+device = torch.device('cpu')
+model_id_pythia = 'gpt2-large'
+cache_dir_pythia = "./models/" + model_id_pythia
+# To try a diffrent modle / lens check if the lens is avalible then modify this code
+model = AutoModelForCausalLM.from_pretrained(
+    pretrained_model_name_or_path=model_id_pythia,
+    cache_dir=cache_dir_pythia,
+    device_map=device,
+    )
+model = model.to(device)
+tokenizer = AutoTokenizer.from_pretrained(
+    pretrained_model_name_or_path=model_id_pythia,
+    cache_dir=cache_dir_pythia,
+    )
+tuned_lens = TunedLens.from_model_and_pretrained(model)
+tuned_lens = tuned_lens.to(device)
+logit_lens = LogitLens.from_model(model)
 
 
 def make_plot(lens, text, layer_stride, statistic, token_range):
