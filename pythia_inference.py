@@ -24,7 +24,7 @@ elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
     device = "mps"
 print(f"using device {device}")
 
-model_id_pythia = "EleutherAI/pythia-12B-deduped"
+model_id_pythia = "EleutherAI/pythia-70m-deduped"
 cache_dir_pythia = "./models/" + model_id_pythia
 
 model = GPTNeoXForCausalLM.from_pretrained(
@@ -52,6 +52,15 @@ Answer the following two-digit addition tasks:
 
 prompt = "What is 43+42?"
 
+prompt = """
+8+1=9
+1+3=4
+2+5=7
+3+3=6
+6+2="""
+
+prompt = """1+1=2, 2+2=4, 3+3=6, 4+4=8, 5+5=10, 6+6=12, 7+7=14, 8+8=16, 9+9="""
+
 
 inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 print(inputs)
@@ -64,3 +73,19 @@ tokens = model.generate(**inputs,
                         )
 output = tokenizer.decode(tokens[0], clean_up_tokenization_spaces = False)
 print(output)
+
+
+
+
+# for i in range(5):
+#     message = ""
+#     equation = input()
+#     message += equation
+#     inputs = tokenizer(message, return_tensors="pt").to(model.device)
+#     response = model.generate(**inputs, 
+#                             max_new_tokens=15, 
+#                             do_sample=False, 
+#                             )
+#     print(tokenizer.batch_decode(response, skip_special_tokens=True)[0])
+#     print("-"*100)
+
