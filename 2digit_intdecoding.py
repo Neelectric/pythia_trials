@@ -34,7 +34,7 @@ print(f"using device {device}")
 
 
 # model_id = "allenai/OLMo-7B-0724-hf"
-model_id = "EleutherAI/pythia-410m-deduped"
+model_id = "EleutherAI/pythia-12b-deduped"
 print(f"Loading {model_id}...")
 if "pythia" in model_id:
     model = PythiaIntermediateDecoder(model_id=model_id)
@@ -47,8 +47,9 @@ with open("datasets/2digit_sum_dataset.json") as f:
     two_digit_dataset = json.load(f)
 random.shuffle(two_digit_dataset)
 n = len(two_digit_dataset)
-# n = 100
+n = 100
 first_n = two_digit_dataset[:n]
+num_layers = len(model.model.base_model.layers)
 
 colors = itertools.cycle(sns.color_palette("tab10"))
 sns.set(style="whitegrid")
@@ -57,7 +58,7 @@ plt.figure(figsize=(10, 6))
 questions = [elt[0] for elt in first_n]
 answers = [elt[1] for elt in first_n]
 all_probabilities = []
-avg_probabilities = {i: [] for i in range(32)}
+avg_probabilities = {i: [] for i in range(num_layers)}
 plotted_counter = 0
 
 for i in tqdm(range(len(questions)), dynamic_ncols=True):
@@ -96,7 +97,6 @@ plt.ylabel("Probability (%)", fontsize=17)
 plt.title(f"Probability of Correct Token Across Decoder Blocks of {model_id}", fontsize=18)
 
 plt.ylim(0, 100)
-num_layers = len(model.model.base_model.layers)
 x_min = num_layers // 5
 plt.xlim(x_min, num_layers)  
 plt.xticks(block_numbers[x_min:], fontsize=14)  
