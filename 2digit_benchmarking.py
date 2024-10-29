@@ -34,20 +34,20 @@ model_id_olmo_7b_inst = "allenai/OLMo-7B-0724-Instruct-hf"
 
 model_id_pythia = "EleutherAI/pythia-12B-deduped"
 
-model_id = model_id_olmo_1b_base
-cache_dir = "./models/" + model_id_pythia
+model_id = model_id_olmo_1b_inst
+cache_dir = "./models/" + model_id
 
 
-print(f"loading {model_id_pythia}")
+print(f"loading {model_id}")
 model = AutoModelForCausalLM.from_pretrained(
-    pretrained_model_name_or_path=model_id_pythia,
+    pretrained_model_name_or_path=model_id,
     # revision="step4000-tokens16B",
     cache_dir=cache_dir,
     device_map=device,
     )
 
 tokenizer = AutoTokenizer.from_pretrained(
-    pretrained_model_name_or_path=model_id_pythia,
+    pretrained_model_name_or_path=model_id,
     cache_dir=cache_dir,
     )
 
@@ -57,7 +57,7 @@ with open("datasets/2digit_sum_dataset.json") as f:
 with open("datasets/2digit_sum_dataset.json") as f:
     dataset = json.load(f)
 
-bsz = 20
+bsz = 50
 
 n_correct = 0
 n_total = 0

@@ -25,11 +25,11 @@ The following table shows the performance of OLMo and Pythia along various sizes
 | EleutherAI/pythia-2.8B-deduped       | 2.8B   |  86.32%  |           |
 | EleutherAI/pythia-6.9B-deduped       | 6.9B   |  91.88%  |           |
 | EleutherAI/pythia-12B-deduped        |  12B   |  88.96%  |           |
-
-| allenai/OLMo-1B-0724-hf              |   1B   |          |           |
-| hamishivi/OLMo-1B-0724-SFT-hf        |   1B   |          |           |
+|                                      |        |          |           |
+| allenai/OLMo-1B-0724-hf              |   1B   |  42.86%  |           |
+| hamishivi/OLMo-1B-0724-SFT-hf        |   1B   |  53.50%  |           |
 | hamishivi/OLMo-1B-0724-Instruct-hf   |   1B   |          |           |
-
+|                                      |        |          |           |
 | allenai/OLMo-7B-0724-hf              |   7B   |          |           |
 | allenai/OLMo-7B-0724-SFT-hf          |   7B   |          |           |
 | allenai/OLMo-7B-0724-Instruct-hf     |   7B   |          |           |
