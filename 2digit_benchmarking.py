@@ -24,21 +24,31 @@ elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
     device = "mps"
 print(f"using device {device}")
 
-model_id_pythia = "EleutherAI/pythia-1.4B-deduped"
-cache_dir_pythia = "./models/" + model_id_pythia
+model_id_olmo_1b_base = "allenai/OLMo-1B-0724-hf"
+model_id_olmo_1b_sft = "hamishivi/OLMo-1B-0724-SFT-hf"
+model_id_olmo_1b_inst = "hamishivi/OLMo-1B-0724-Instruct-hf"
+
+model_id_olmo_7b_base = "allenai/OLMo-7B-0724-hf"
+model_id_olmo_7b_sft = "allenai/OLMo-7B-0724-SFT-hf"
+model_id_olmo_7b_inst = "allenai/OLMo-7B-0724-Instruct-hf"
+
+model_id_pythia = "EleutherAI/pythia-12B-deduped"
+
+model_id = model_id_olmo_1b_base
+cache_dir = "./models/" + model_id_pythia
 
 
 print(f"loading {model_id_pythia}")
 model = AutoModelForCausalLM.from_pretrained(
     pretrained_model_name_or_path=model_id_pythia,
     # revision="step4000-tokens16B",
-    cache_dir=cache_dir_pythia,
+    cache_dir=cache_dir,
     device_map=device,
     )
 
 tokenizer = AutoTokenizer.from_pretrained(
     pretrained_model_name_or_path=model_id_pythia,
-    cache_dir=cache_dir_pythia,
+    cache_dir=cache_dir,
     )
 
 with open("datasets/2digit_sum_dataset.json") as f:
@@ -47,7 +57,7 @@ with open("datasets/2digit_sum_dataset.json") as f:
 with open("datasets/2digit_sum_dataset.json") as f:
     dataset = json.load(f)
 
-bsz = 50
+bsz = 20
 
 n_correct = 0
 n_total = 0
