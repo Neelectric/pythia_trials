@@ -28,9 +28,9 @@ The following table shows the performance of OLMo and Pythia along various sizes
 |                                      |        |          |           |
 | allenai/OLMo-1B-0724-hf              |   1B   |  42.86%  |           |
 | hamishivi/OLMo-1B-0724-SFT-hf        |   1B   |  53.50%  |           |
-| hamishivi/OLMo-1B-0724-Instruct-hf   |   1B   |          |           |
+| hamishivi/OLMo-1B-0724-Instruct-hf   |   1B   |  52.02%  |           |
 |                                      |        |          |           |
-| allenai/OLMo-7B-0724-hf              |   7B   |          |           |
+| allenai/OLMo-7B-0724-hf              |   7B   |  99.88%  |           |
 | allenai/OLMo-7B-0724-SFT-hf          |   7B   |          |           |
 | allenai/OLMo-7B-0724-Instruct-hf     |   7B   |          |           |
 <!-- table -->

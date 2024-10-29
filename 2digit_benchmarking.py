@@ -34,7 +34,7 @@ model_id_olmo_7b_inst = "allenai/OLMo-7B-0724-Instruct-hf"
 
 model_id_pythia = "EleutherAI/pythia-12B-deduped"
 
-model_id = model_id_olmo_1b_inst
+model_id = model_id_olmo_7b_sft
 cache_dir = "./models/" + model_id
 
 
