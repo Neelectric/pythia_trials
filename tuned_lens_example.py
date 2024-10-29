@@ -6,13 +6,13 @@ from tuned_lens.plotting import PredictionTrajectory
 import ipywidgets as widgets
 from plotly import graph_objects as go
 
+# temp = torch.load("/Users/s2011847/.cache/huggingface/hub/spaces--AlignmentResearch--tuned-lens/snapshots/1ac7285852a22309f571c2555efc37375d0c4cda/lens/EleutherAI/pythia-410m-deduped/params.pt", map_location=torch.device("cpu"))
 
-
-
-
-device = torch.device('cpu')
-model_id_pythia = 'gpt2-large'
-cache_dir_pythia = "./models/" + model_id_pythia
+device = torch.device('mps')
+# model_id_pythia = 'gpt2-large'
+# model_id_pythia = "meta-llama/Meta-Llama-3-8B-Instruct"
+model_id_pythia = "EleutherAI/pythia-410m-deduped"
+if "llama" not in model_id_pythia: cache_dir_pythia = "./models/" + model_id_pythia
 # To try a diffrent modle / lens check if the lens is avalible then modify this code
 model = AutoModelForCausalLM.from_pretrained(
     pretrained_model_name_or_path=model_id_pythia,

@@ -61,6 +61,8 @@ prompt = """
 
 prompt = """1+1=2, 2+2=4, 3+3=6, 4+4=8, 5+5=10, 6+6=12, 7+7=14, 8+8=16, 9+9="""
 
+prompt = "What is 43+42? 43+42="
+
 
 inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 print(inputs)
