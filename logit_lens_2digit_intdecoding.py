@@ -34,12 +34,12 @@ print(f"using device {device}")
 
 
 # model_id = "allenai/OLMo-7B-0724-hf"
-model_id = "EleutherAI/pythia-12b-deduped"
+model_id = "EleutherAI/pythia-160m-deduped"
 print(f"Loading {model_id}...")
 if "pythia" in model_id:
-    model = PythiaIntermediateDecoder(model_id=model_id)
+    int_decoder = PythiaIntermediateDecoder(model_id=model_id)
 elif "OLMo" in model_id:
-    model = OlmoIntermediateDecoder(model_id=model_id)
+    int_decoder = OlmoIntermediateDecoder(model_id=model_id)
 else:
     raise TypeError("Could not recognise model type and associated intermediate decoder")
 
@@ -49,7 +49,7 @@ random.shuffle(two_digit_dataset)
 n = len(two_digit_dataset)
 n = 100
 first_n = two_digit_dataset[:n]
-num_layers = len(model.model.base_model.layers)
+num_layers = len(int_decoder.model.base_model.layers)
 
 colors = itertools.cycle(sns.color_palette("tab10"))
 sns.set(style="whitegrid")
@@ -65,8 +65,8 @@ for i in tqdm(range(len(questions)), dynamic_ncols=True):
     question = questions[i]
     answer = answers[i]
     prompt = f"Question: What is {question}? Answer: {question}="
-    model.reset_all()
-    block_activations = model.decode_all_layers(prompt, 
+    int_decoder.reset_all()
+    block_activations = int_decoder.decode_all_layers(prompt, 
                             topk=5,
                             printing=False,
                             print_attn_mech=False, 
