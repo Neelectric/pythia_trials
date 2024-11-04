@@ -41,7 +41,7 @@ print(f"using device {device}")
 # model_id = 'gpt2-large'
 # model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
 # model_id = "allenai/OLMo-1B-0724-hf"
-model_id = "EleutherAI/pythia-2.8b-deduped"
+model_id = "EleutherAI/pythia-410m-deduped"
 if "llama" not in model_id: cache_dir = "./models/" + model_id
 # To try a diffrent modle / lens check if the lens is avalible then modify this code
 model = AutoModelForCausalLM.from_pretrained(
@@ -61,14 +61,11 @@ lens = tuned_lens
 layer_stride = 1
 top_k = 10
 
-# question = "19+21"
-# answer = "40"
-
 with open("datasets/2digit_sum_dataset.json") as f:
     two_digit_dataset = json.load(f)
 random.shuffle(two_digit_dataset)
 n = len(two_digit_dataset)
-# n = 10
+# n = 100
 first_n = two_digit_dataset[:n]
 num_layers = len(model.base_model.layers)
 
@@ -119,19 +116,19 @@ for i in tqdm(range(len(questions)), dynamic_ncols=True):
 
 
 avg_prob_values = [np.mean(avg_probabilities[block]) for block in block_numbers]
+# print(avg_prob_values)
 sns.lineplot(x=block_numbers, y=avg_prob_values, marker='o', color="black", label=f"Average Probability Across {n} prompts", linewidth=3)
-
 
 plt.xlabel("Block Number", fontsize=17)
 plt.ylabel("Probability (%)", fontsize=17)
-plt.title(f"Probability of Correct Token Across Decoder Blocks of {model_id}", fontsize=18)
+plt.title(f"Tuned Lens Accuracy Across Layers of {model_id}", fontsize=18)
 
 plt.ylim(0, 100)
 # x_min = num_layers // 5
 x_min = 0
-plt.xlim(x_min, num_layers+1)  
+plt.xlim(x_min, num_layers)  
 plt.xticks(block_numbers[x_min:], fontsize=14)  
-plt.yticks(fontsize=14)
+plt.yticks(range(0,100,10), fontsize=14)
 plt.gca().yaxis.set_major_formatter(PercentFormatter())
 
 plt.grid(visible=True, which='both', axis='both', linestyle='--', linewidth=0.7)

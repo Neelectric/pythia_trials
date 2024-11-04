@@ -94,7 +94,7 @@ sns.lineplot(x=block_numbers, y=avg_prob_values, marker='o', color="black", labe
 
 plt.xlabel("Block Number", fontsize=17)
 plt.ylabel("Probability (%)", fontsize=17)
-plt.title(f"Probability of Correct Token Across Decoder Blocks of {model_id}", fontsize=18)
+plt.title(f"Logit Lens Probability of Correct Token Across Decoder Blocks of {model_id}", fontsize=18)
 
 plt.ylim(0, 100)
 x_min = num_layers // 5
