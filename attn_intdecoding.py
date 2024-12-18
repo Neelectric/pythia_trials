@@ -43,40 +43,39 @@ elif "OLMo" in model_id:
     int_decoder = Olmo2IntermediateDecoder(model_id=model_id)
 else:
     raise TypeError("Could not recognise model type and associated intermediate decoder")
-dataset = load_dataset("LightEval/MATH")["train"]
+dataset = load_dataset("lighteval/MATH")["train"]
 
 print(dataset)
 
-n = 100
+n = 5
 first_n = dataset[:n]
 num_layers = len(int_decoder.model.base_model.layers)
 
-# colors = itertools.cycle(sns.color_palette("tab10"))
-# sns.set(style="whitegrid")
-# plt.figure(figsize=(10, 6))
 
-# questions = [elt[0] for elt in first_n]
-# answers = [elt[1] for elt in first_n]
-# all_probabilities = []
-# avg_probabilities = {i: [] for i in range(num_layers)}
-# plotted_counter = 0
+all_probabilities = []
+avg_probabilities = {i: [] for i in range(num_layers)}
+plotted_counter = 0
 
-# for i in tqdm(range(len(questions)), dynamic_ncols=True):
-#     question = questions[i]
-#     answer = answers[i]
-#     prompt = f"Question: What is {question}? Answer: {question}="
-#     int_decoder.reset_all()
-#     block_activations = int_decoder.decode_all_layers(prompt, 
-#                             topk=5,
-#                             printing=False,
-#                             print_attn_mech=False, 
-#                             print_intermediate_res=False, 
-#                             print_mlp=False, 
-#                             print_block=True
-#                             )
-#     block_numbers = []
-#     probabilities = []
+for i in tqdm(range(n), dynamic_ncols=True):
+    question = first_n["problem"][i]
+    chat = [
+        {"role": "user", "content": question}
+        ]
+    question = int_decoder.tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True)
+    answer = first_n["solution"][i]
+    prompt = f"{question}"
+    int_decoder.reset_all()
+    block_activations = int_decoder.decode_all_layers(prompt, 
+                            topk=5,
+                            printing=False,
+                            print_attn_mech=False, 
+                            print_intermediate_res=False, 
+                            print_mlp=False, 
+                            print_block=True
+                            )
+    block_numbers = []
+    probabilities = []
 
-#     for block_activation in block_activations:
-#         block_num = int(block_activation[0].split()[1])
-#         token_probs = dict(block_activation[1])
+    for block_activation in block_activations:
+        block_num = int(block_activation[0].split()[1])
+        token_probs = dict(block_activation[1])
