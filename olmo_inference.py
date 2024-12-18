@@ -32,7 +32,7 @@ model_id_olmo_7b_base = "allenai/OLMo-7B-0724-hf"
 model_id_olmo_7b_sft = "allenai/OLMo-7B-0724-SFT-hf"
 model_id_olmo_7b_inst = "allenai/OLMo-7B-0724-Instruct-hf"
 
-model_id_olmo = model_id_olmo_7b_sft
+model_id_olmo = model_id_olmo_7b_inst
 cache_dir_olmo = "./models/" + model_id_olmo
 
 print(f"loading {model_id_olmo}")
@@ -56,9 +56,11 @@ for i in range(5):
     inputs = tokenizer(message, return_tensors="pt").to(model.device)
 
     response = model.generate(**inputs, 
-                            max_new_tokens=50, 
+                            max_new_tokens=100, 
                             do_sample=False, 
                             )
     print(tokenizer.batch_decode(response, skip_special_tokens=True)[0])
     print("-"*100)
 
+
+# Mor Geva et al. have shown that the MLP acts as an associative key-value memory (where we make a critical distinction against the words "key" and "value" from the attention operation). Furthermore, 
